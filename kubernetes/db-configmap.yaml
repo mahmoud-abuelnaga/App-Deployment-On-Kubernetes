@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-configmap
+  labels:
+    app: color-api
+    tier: configmap
+
+data:
+  init.js: |
+    const MONGODB_INITDB_DATABASE = process.env.MONGODB_INITDB_DATABASE;
+    const INITDB_USER = process.env.INITDB_USER;
+    const INITDB_USER_PASSWORD = process.env.INITDB_USER_PASSWORD;
+
+    if (!MONGODB_INITDB_DATABASE) {
+      throw new Error("MONGODB_INITDB_DATABASE is not set");
+    }
+
+    if (!INITDB_USER) {
+      throw new Error("INITDB_USER is not set");
+    }
+
+    if (!INITDB_USER_PASSWORD) {
+      throw new Error("INITDB_USER_PASSWORD is not set");
+    }
+
+    db = db.getSiblingDB(MONGODB_INITDB_DATABASE);
+    db.createUser({
+      user: INITDB_USER,
+      pwd: INITDB_USER_PASSWORD,
+      roles: [
+        {
+          role: "readWrite",
+          db: MONGODB_INITDB_DATABASE,
+        },
+      ],
+    });

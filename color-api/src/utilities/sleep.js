@@ -1,0 +1,11 @@
+/**
+ *
+ * @param {number} seconds
+ */
+function sleep(seconds) {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, seconds * 1000);
+  });
+}
+
+export default sleep;

@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db-statefulset
+  labels:
+    app: color-api
+    tier: statefulset
+
+spec:
+  replicas: 1
+  serviceName: "db-headless-service"
+  selector:
+    matchLabels:
+      app: color-api
+      tier: database
+
+  template:
+    metadata:
+      labels:
+        app: color-api
+        tier: database
+
+    spec:
+      containers:
+        - name: db-container
+          image: mongodb/mongodb-community-server:7.0-ubi8
+          ports:
+            - containerPort: 27017
+              protocol: TCP
+              name: db-port
+
+          envFrom:
+            - secretRef:
+                name: db-app-user-secret
+
+            - secretRef:
+                name: db-root-user-secret
+
+          volumeMounts:
+            - mountPath: /data/db
+              name: db-data-volume-claim
+
+            - mountPath: /docker-entrypoint-initdb.d
+              name: db-config-volume
+
+          startupProbe:
+            tcpSocket:
+              port: 27017
+
+            failureThreshold: 2
+            periodSeconds: 5
+            timeoutSeconds: 2
+            initialDelaySeconds: 5
+
+          livenessProbe:
+            tcpSocket:
+              port: 27017
+
+            failureThreshold: 2
+            periodSeconds: 5
+            timeoutSeconds: 2
+
+          readinessProbe:
+            tcpSocket:
+              port: 27017
+
+            failureThreshold: 2
+            successThreshold: 2
+            periodSeconds: 5
+
+      volumes:
+        - name: db-config-volume
+          configMap:
+            name: db-configmap
+
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: db-data-volume-claim
+        labels:
+          app: color-api
+          tier: volume-claim
+
+      spec:
+        storageClassName: standard
+        volumeMode: Filesystem
+        accessModes:
+          - ReadWriteOncePod
+        resources:
+          requests:
+            storage: 10Gi

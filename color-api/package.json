@@ -1,0 +1,20 @@
+{
+  "name": "color-api",
+  "version": "2.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "docker-build": "docker build --tag abuelnaga0/color-api:v$npm_package_version --file Dockerfile .",
+    "print-version": "echo $npm_package_version"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.18.2"
+  },
+  "type": "module"
+}

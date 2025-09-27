@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-configmap
+  labels:
+    app: color-api
+    tier: configmap
+
+data:
+  PORT: "80"
+  NODE_ENV: "production"
+  STARTUP_DELAY: "0"
+  IS_LIVE: "true"
+  IS_READY: "true"
+  APP_COLOR: "red"

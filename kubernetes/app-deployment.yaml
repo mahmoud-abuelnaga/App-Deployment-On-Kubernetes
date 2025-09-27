@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+  labels:
+    app: color-api
+    tier: deployment
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: color-api
+      tier: backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: "25%"
+      maxUnavailable: "25%"
+
+  template:
+    metadata:
+      labels:
+        app: color-api
+        tier: backend
+
+    spec:
+      containers:
+        - name: color-api-nodejs-container
+          image: abuelnaga0/color-api:v2.0.0
+
+          resources:
+            requests:
+              cpu: "0.25"
+              memory: "256Mi"
+            limits:
+              cpu: "0.5"
+              memory: "512Mi"
+
+          ports:
+            - containerPort: 80
+
+          startupProbe:
+            httpGet:
+              path: "/start"
+              port: 80
+
+            failureThreshold: 2
+            periodSeconds: 5
+            timeoutSeconds: 2
+            initialDelaySeconds: 15
+
+          livenessProbe:
+            httpGet:
+              path: "/health"
+              port: 80
+
+            failureThreshold: 2
+            periodSeconds: 5
+            timeoutSeconds: 2
+
+          readinessProbe:
+            httpGet:
+              path: "/health"
+              port: 80
+
+            failureThreshold: 2
+            successThreshold: 2
+            periodSeconds: 5
+
+          envFrom:
+            - secretRef:
+                name: app-secret
+            - configMapRef:
+                name: app-configmap
+
+          env:
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: MONGODB_INITDB_DATABASE
+                  name: db-app-user-secret
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  key: INITDB_USER
+                  name: db-app-user-secret
+
+            - name: DB_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: INITDB_USER_PASSWORD
+                  name: db-app-user-secret
